@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Cart - Cloth Store{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-shopping-cart"></i> Shopping Cart</h2>
+
+{% if cart_items %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                {% for item in cart_items %}
+                <div class="row mb-3 border-bottom pb-3">
+                    <div class="col-md-3">
+                        <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="img-fluid rounded"
+                            style="height: 150px; width: auto; object-fit: cover;">
+                    </div>
+                    <div class="col-md-6">
+                        <h5>{{ item.product.name }}</h5>
+                        <p class="text-muted"> {{ item.product.gender|title }}</p>
+                        <!-- <form method="post" action="/add-to-cart" required>
+                            <label class="form-label fw-semibold" required>Size</label>
+                            <select name="size" class="form-select" required>
+                                <option value="" disabled selected>Select Size</option>
+                                <option value="XS">XS</option>
+                                <option value="S">S</option>
+                                <option value="M">M</option>
+                                <option value="L">L</option>
+                                <option value="XL">XL</option>
+                                <option value="XXL">XXL</option>
+                            </select>
+                            <button type="submit" class="btn btn-dark mt-3">Add to Cart</button>
+                        </form> -->
+
+
+                        <p class="mt-2">Color: <strong>Black</strong></p>
+
+                        <!-- <p>Stock: {{ item.product.stock }} available</p> -->
+
+                        <p>
+                            {% if item.product.stock > 20 %}
+                            <span style="color: green; font-weight: bold;">In Stock</span>
+                            {% elif item.product.stock > 0 %}
+                            <span style="color: orange; font-weight: bold;">Few items left...!!!</span>
+                            {% else %}
+                            <span style="color: red; font-weight: bold;">Out Of Stock</span>
+                            {% endif %}
+                        </p>
+
+
+
+                        <div class="mb-2">
+                            {% if item.product.discount > 0 %}
+                            <p class="mb-1">
+                                <span class="text-decoration-line-through text-muted">
+                                    Rs {{ "%.2f"|format(item.product.price) }}
+                                </span>
+                                <span class="h5 text-danger ms-2">
+                                    Rs {{ "%.2f"|format(item.item_price) }}
+                                </span>
+                                <span class="badge bg-danger">Save {{ item.product.discount }}%</span>
+                            </p>
+                            {% else %}
+                            <p class="h5 mb-1">Rs {{ "%.2f"|format(item.product.price) }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <form action="{{ url_for('update_cart') }}" method="POST" class="mb-2">
+                            <input type="hidden" name="cart_item_id" value="{{ item.id }}">
+                            <div class="input-group input-group-sm" style="max-width: 100px;">
+                                <input type="number" name="quantity" value="{{ item.quantity }}" min="1"
+                                    max="{{ item.product.stock }}" class="form-control text-center"
+                                    onchange="checkQuantityAndSubmit(this)">
+                            </div>
+                        </form>
+
+                        <p class="mb-2">
+                            <strong>Total:</strong> Rs {{ "%.2f"|format(item.item_total) }}
+                        </p>
+
+                        <a href="{{ url_for('remove_from_cart', cart_item_id=item.id) }}" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Remove this item from cart?')">
+                            <i class="fas fa-trash"></i> Remove
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Order Summary</h5>
+            </div>
+            <div class="card-body">
+                {% for item in cart_items %}
+                <div class="d-flex justify-content-between mb-2">
+                    <span>{{ item.product.name }} x{{ item.quantity }}</span>
+                    <span>Rs {{ "%.2f"|format(item.item_total) }}</span>
+                </div>
+                {% endfor %}
+
+                <hr>
+
+                <div class="d-flex justify-content-between">
+                    <strong>Total Amount:</strong>
+                    <strong class="h4 text-danger">Rs {{ "%.2f"|format(total) }}</strong>
+                </div>
+
+                <div class="d-grid gap-2 mt-3">
+                    <a href="{{ url_for('checkout') }}" class="btn btn-primary btn-lg" id="checkoutBtn">
+                        <i class="fas fa-credit-card"></i> Proceed to Checkout
+                    </a>
+                    <a href="{{ url_for('products') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-shopping-bag"></i> Continue Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.getElementById('checkoutBtn').addEventListener('click', function (e) {
+        let inputs = document.querySelectorAll('input[name="quantity"]');
+        let hasError = false;
+        let errorHtml = '<ul style="text-align: left;">';
+
+        inputs.forEach(input => {
+            let quantity = parseInt(input.value);
+            let maxStock = parseInt(input.getAttribute('max'));
+
+            if (quantity > maxStock) {
+                hasError = true;
+                // Find product name roughly (traversing up to row)
+                let row = input.closest('.row');
+                let name = row.querySelector('h5').innerText;
+                errorHtml += `<li><strong>${name}</strong>: Requested ${quantity}, Available ${maxStock}</li>`;
+            }
+        });
+        errorHtml += '</ul>';
+
+        if (hasError) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'error',
+                title: 'Stock Not Available',
+                html: errorHtml + '<p>Please reduce the quantity to proceed.</p>',
+                confirmButtonText: 'OK',
+                customClass: {
+                    popup: 'animated fadeInDown'
+                }
+            });
+        }
+    });
+
+    function checkQuantityAndSubmit(input) {
+        let max = parseInt(input.getAttribute('max'));
+        let val = parseInt(input.value);
+
+        if (val > max) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Stock Limit',
+                text: 'Only ' + max + ' items available',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                input.value = max;
+                input.form.submit();
+            });
+        } else if (val < 1) {
+             input.value = 1;
+             input.form.submit();
+        } else {
+            input.form.submit();
+        }
+    }
+</script>
+
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+    <h4>Your cart is empty</h4>
+    <p class="text-muted">Add some items to get started</p>
+    <a href="{{ url_for('products') }}" class="btn btn-primary">
+        <i class="fas fa-shopping-bag"></i> Shop Now
+    </a>
+</div>
+{% endif %}
+{% endblock %}

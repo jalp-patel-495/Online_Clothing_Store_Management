@@ -1,0 +1,17 @@
+
+
+========================================
+Order ID:   ORD-20260201104337-8YGVX4
+Customer:   admin
+Items:      COMFORT SUIT TROUSERS (Qty: 5)
+Total:      rs 16862.50
+Date:       2026-02-01 10:43:37
+========================================
+
+========================================
+Order ID:   ORD-20260201104952-S7OJXZ
+Customer:   admin
+Items:      COMFORT SUIT TROUSERS (Qty: 1)
+Total:      rs 3372.50
+Date:       2026-02-01 10:49:52
+========================================

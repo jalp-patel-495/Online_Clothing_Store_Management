@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Products - Cloth Store{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar Filters -->
+    <div class="col-md-3">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('products') }}">
+                    <div class="mb-3">
+                        <label class="form-label">Gender</label>
+                        <div class="list-group">
+                            <a href="{{ url_for('products', gender='all') }}" 
+                               class="list-group-item list-group-item-action {% if selected_gender == 'all' %}active{% endif %}">
+                                All Genders
+                            </a>
+                            <a href="{{ url_for('products', gender='men') }}" 
+                               class="list-group-item list-group-item-action {% if selected_gender == 'men' %}active{% endif %}">
+                                Men
+                            </a>
+                            <a href="{{ url_for('products', gender='women') }}" 
+                               class="list-group-item list-group-item-action {% if selected_gender == 'women' %}active{% endif %}">
+                                Women
+                            </a>
+                            <a href="{{ url_for('products', gender='kids') }}" 
+                               class="list-group-item list-group-item-action {% if selected_gender == 'kids' %}active{% endif %}">
+                                Kids
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Category</label>
+                        <div class="list-group">
+                            <a href="{{ url_for('products', gender=selected_gender) }}" 
+                               class="list-group-item list-group-item-action {% if not selected_category %}active{% endif %}">
+                                All Categories
+                            </a>
+                            {% for category in categories %}
+                            <a href="{{ url_for('products', gender=selected_gender, category=category.id) }}" 
+                               class="list-group-item list-group-item-action {% if selected_category == category.id %}active{% endif %}">
+                                {{ category.name }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <a href="{{ url_for('products') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Clear Filters
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Products Grid -->
+    <div class="col-md-9">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>All Products</h2>
+            <span class="badge bg-primary">{{ products|length }} products found</span>
+        </div>
+        
+        {% if products %}
+        <div class="row g-4">
+            {% for product in products %}
+            <div class="col-md-4 col-sm-6">
+                <div class="card product-card h-100">
+                    {% if product.discount > 0 %}
+                    <span class="badge bg-danger position-absolute" style="top: 10px; left: 10px;">{{ product.discount }}% OFF</span>
+                    {% endif %}
+                    <!-- <img src="{{ product.image_url }}" class="card-img-top product-image" alt="{{ product.name }}"> -->
+                     <a href="{{ url_for('product_detail', product_id=product.id) }}">
+                        <img src="{{ product.image_url }}"
+                            class="card-img-top product-image"
+                            alt="{{ product.name }}">
+                    </a>
+
+
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{{ url_for('product_detail', product_id=product.id) }}"
+                            class="text-decoration-none text-dark">
+                                {{ product.name }}
+                            </a>
+                        </h5>
+                        <p class="card-text text-muted">{{ product.category.name }} - {{ product.gender|title }}</p>
+                        <p class="card-text small">{{ product.description[:100] }}...</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                {% if product.discount > 0 %}
+                                <span class="text-decoration-line-through text-muted">Rs {{ product.price }}</span>
+                                <span class="h5 text-danger ms-2">Rs {{ product.get_discounted_price() }}</span>
+                                {% else %}
+                                <span class="h5">Rs {{ product.price }}</span>
+                                {% endif %}
+                            </div>
+                            <!-- <span class="badge bg-info">{{ product.size }}</span> -->
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge {% if product.stock > 10 %}bg-success{% elif product.stock > 0 %}bg-warning{% else %}bg-danger{% endif %}">
+                                Stock: {{ product.stock }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white">
+                        {% if product.stock > 0 %}
+                            {% if session.get('user_id') %}
+                            <div class="d-flex gap-2">
+                                <form action="{{ url_for('add_to_cart') }}" method="POST" class="flex-grow-1">
+                                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                                    <div class="input-group">
+                                        <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="form-control form-control-sm">
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-cart-plus"></i>
+                                        </button>
+                                    </div>
+                                </form>
+                                <a href="{{ url_for('add_to_wishlist', product_id=product.id) }}" class="btn btn-outline-danger btn-sm" title="Add to Wishlist">
+                                    <i class="fas fa-heart"></i>
+                                </a>
+                            </div>
+                            {% else %}
+                            <a href="{{ url_for('login') }}" class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-sign-in-alt"></i> Login to Purchase
+                            </a>
+                            {% endif %}
+                        {% else %}
+                        <button class="btn btn-secondary btn-sm w-100" disabled>Out of Stock</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h4>No products found</h4>
+            <p class="text-muted">Try adjusting your filters</p>
+            <a href="{{ url_for('products') }}" class="btn btn-primary">Clear Filters</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Cloth Store{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section position-relative mb-5 p-0">
+    <div id="fashionCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="3000">
+
+        <!-- Indicators -->
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#fashionCarousel" data-bs-slide-to="0" class="active"></button>
+            <button type="button" data-bs-target="#fashionCarousel" data-bs-slide-to="1"></button>
+            <button type="button" data-bs-target="#fashionCarousel" data-bs-slide-to="2"></button>
+            <button type="button" data-bs-target="#fashionCarousel" data-bs-slide-to="3"></button>
+            <button type="button" data-bs-target="#fashionCarousel" data-bs-slide-to="4"></button>
+        </div>
+
+        <!-- Slides -->
+        <div class="carousel-inner">
+
+            <!-- Slide 1 -->
+            <div class="carousel-item active" style="height: 600px;">
+                <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=2000"
+                    class="d-block w-100 h-100" style="object-fit: cover;">
+                <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded mb-4">
+                    <h5>🔥 Flat 30% OFF</h5>
+                    <p>Women Trendy Wear</p>
+                </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="carousel-item" style="height: 600px;">
+                <img src="https://images.pexels.com/photos/5864245/pexels-photo-5864245.jpeg"
+                    class="d-block w-100 h-100" style="object-fit: cover;">
+                <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded mb-4">
+                    <h5>✨ Up to 40% OFF</h5>
+                    <p>Men Fashion Collection</p>
+                </div>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="carousel-item" style="height: 600px;">
+                <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=2000"
+                    class="d-block w-100 h-100" style="object-fit: cover;">
+                <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded mb-4">
+                    <h5>👕 Buy 1 Get 1</h5>
+                    <p>Casual T-Shirts</p>
+                </div>
+            </div>
+
+            <!-- Slide 4 -->
+            <div class="carousel-item" style="height: 600px;">
+                <img src="https://static.vecteezy.com/system/resources/thumbnails/010/489/479/small_2x/children-s-bright-clothes-hang-on-the-display-in-the-baby-clothing-store-boys-section-photo.jpg"
+                    class="d-block w-100 h-100" style="object-fit: cover; object-position: top;">
+                <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded mb-4">
+                    <h5>🧥 Up to 40% OFF</h5>
+                    <p>Kids Fashion Collection</p>
+                </div>
+            </div>
+
+            <!-- Slide 5 -->
+            <div class="carousel-item" style="height: 600px;">
+                <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=2000"
+                    class="d-block w-100 h-100" style="object-fit: cover;">
+                <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded mb-4">
+                    <h5>🎉 New Arrivals</h5>
+                    <p>Latest Fashion Trends</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Controls -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#fashionCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#fashionCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
+
+    </div>
+
+    <!-- Static Overlay Text -->
+    <!-- <div class="position-absolute top-50 start-0 translate-middle-y text-white p-4 mx-3 mx-md-5"
+        style="z-index: 10; max-width: 600px; background: rgba(0,0,0,0.3); backdrop-filter: blur(3px); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+        <h1 class="display-3 fw-bold mb-3">Fashion for Everyone</h1>
+        <p class="lead mb-4 fw-normal text-white-50" style="color: #f8f9fa !important; font-size: 1.25rem;">Discover the
+            latest trends in clothing for men, women, and kids. Quality fabrics,
+            perfect fits, and unbeatable prices.</p>
+        <a href="{{ url_for('products') }}"
+            class="btn btn-light btn-lg px-4 py-2 rounded-pill fw-bold shadow-sm text-primary">Shop Now</a>
+    </div> -->
+</section>
+<!-- Categories -->
+<section class="categories mb-5">
+    <div>
+        <h2 class="text-center mb-4">Shop by Category</h2>
+        <div class="row g-4">
+
+            <!-- MEN -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <img src="https://media.istockphoto.com/id/1368390715/photo/mid-adult-man-choosing-clothes-at-vintage-clothing-store.jpg?s=612x612&w=0&k=20&c=kT9WpWGsEJZS_DnQpw8SdaOiKYfnffiff7sibAWv-dc= "
+                        class="category-img">
+                    <div class="card-body text-center">
+                        <h4>Men</h4>
+                        <a href="{{ url_for('products', gender='men') }}" class="btn btn-primary">
+                            Shop For Men
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- WOMEN -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <img src="https://indian-retailer.s3.ap-south-1.amazonaws.com/s3fs-public/2021-12/young-woman-with-shopping-bags-standing-clothing-store.jpg"
+                        class="category-img">
+                    <div class="card-body text-center">
+                        <h4>Women</h4>
+                        <a href="{{ url_for('products', gender='women') }}" class="btn btn-primary">
+                            Shop For Women
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- KIDS -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <img src="static/images/kids2.jpeg" class="category-img">
+                    <div class="card-body text-center">
+                        <h4>Kids</h4>
+                        <a href="{{ url_for('products', gender='kids') }}" class="btn btn-primary">
+                            Shop For Kids
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- Featured Products -->
+<section class="featured-products">
+    <div>
+        <h2 class="text-center mb-4">Featured Products</h2>
+        <div class="row g-4">
+            {% for product in products %}
+            <div class="col-md-3 col-sm-6">
+                <div class="card product-card h-100">
+                    {% if product.discount > 0 %}
+                    <span class="badge bg-danger position-absolute" style="top: 10px; left: 10px;">{{
+                        product.discount}}% OFF</span>
+                    {% endif %}
+                    <!-- <img src="{{ product.image_url }}" class="card-img-top product-image" alt="{{ product.name }}"> -->
+                    <!-- <a href="{{ url_for('product_detail', product_id=product.id) }}">
+                        <img src="{{ product.image_url }}"
+                            class="card-img-top product-image"
+                            style="cursor:pointer;">
+                    </a> -->
+                    <a href="{{ url_for('product_detail', product_id=product.id) }}"
+                        style="display:flex; align-items:center; justify-content:center; width:100%; height:220px; background:#f8f9fa;">
+
+                        <img src="{{ product.image_url }}" class="card-img-top"
+                            style="max-width:100%; max-height:100%; object-fit:contain; cursor:pointer;">
+                    </a>
+
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{{ url_for('product_detail', product_id=product.id) }}"
+                                class="text-decoration-none text-dark">
+                                {{ product.name }}
+                            </a>
+                        </h5>
+
+                        <p class="card-text text-muted mb-1">
+                            {{ product.category.name }} - {{ product.gender|title }}
+                        </p>
+
+                        <p class="card-text text-muted">
+                            Size: {{ product.size }}
+                        </p>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                {% if product.discount > 0 %}
+                                <span class="text-decoration-line-through text-muted">Rs {{ product.price }}</span>
+                                <span class="h5 text-danger ms-2">Rs {{ product.get_discounted_price() }}</span>
+                                {% else %}
+                                <span class="h5">Rs {{ product.price }}</span>
+                                {% endif %}
+                            </div>
+                            <!-- <span class="badge bg-info">{{ product.size }}</span>  -->
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-white">
+                        {% if product.stock > 0 %}
+                        {% if session.get('user_id') %}
+                        <form action="{{ url_for('add_to_cart') }}" method="POST" class="d-grid">
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="fas fa-cart-plus"></i> Add to Cart
+                            </button>
+                        </form>
+                        <br>
+                        <a href="{{ url_for('add_to_wishlist', product_id=product.id) }}"
+                            class="btn btn-outline-danger btn-sm w-100">
+                            <i class="fas fa-heart"></i> Add to Wishlist
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('login') }}" class="btn btn-primary btn-sm w-100">
+                            <i class="fas fa-sign-in-alt"></i> Login to Purchase
+                        </a>
+                        {% endif %}
+                        {% else %}
+                        <button class="btn btn-secondary btn-sm w-100" disabled>Out of Stock</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{{ url_for('products') }}" class="btn btn-outline-primary">View All Products</a>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- Features -->
+<section class="features py-5 bg-light mt-5">
+    <div>
+        <div class="row text-center g-4">
+            <div class="col-md-4">
+                <div class="feature-item p-4">
+                    <i class="fas fa-shipping-fast fa-3x text-primary mb-3"></i>
+                    <h4>Free Shipping</h4>
+                    <p>On orders over Rs 500</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-item p-4">
+                    <i class="fas fa-undo-alt fa-3x text-primary mb-3"></i>
+                    <h4>Easy Returns</h4>
+                    <p>30-day return policy</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-item p-4">
+                    <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                    <h4>Secure Payment</h4>
+                    <p>100% secure transactions</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
