@@ -222,7 +222,7 @@
                 <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
                     <div>
                         <strong>{{ item.product.name }}</strong>
-                        <div class="text-muted small">Qty: {{ item.quantity }}</div>
+                        <div class="text-muted small">Qty: {{ item.quantity }} {% if item.size %}| Size: {{ item.size }}{% endif %}</div>
                     </div>
                     <div>Rs {{ item.product.get_discounted_price() * item.quantity }}</div>
                 </div>

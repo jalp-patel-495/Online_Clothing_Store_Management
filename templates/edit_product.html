@@ -16,16 +16,18 @@
             </div>
 
             <!-- Size -->
-            <div class="col-md-3 mb-3">
+            <div class="col-md-6 mb-3">
                 <label class="form-label">Size</label>
-                <select name="size" class="form-select">
-                    <option value="">Select Size</option>
-                    {% for s in ['S','M','L','XL','XXL'] %}
-                    <option value="{{ s }}" {% if product.size == s %}selected{% endif %}>
-                        {{ s }}
-                    </option>
+                <div class="d-flex flex-wrap gap-2">
+                    {% set current_sizes = product.size.split(',') if product.size else [] %}
+                    {% for s in ['XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="size" value="{{ s }}" id="size{{ s }}" 
+                               {% if s in current_sizes %}checked{% endif %}>
+                        <label class="form-check-label" for="size{{ s }}">{{ s }}</label>
+                    </div>
                     {% endfor %}
-                </select>
+                </div>
             </div>
 
             <!-- Color -->

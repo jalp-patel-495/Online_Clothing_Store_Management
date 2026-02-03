@@ -82,6 +82,7 @@ class Cart(db.Model):
     user_id = db.Column(db.Integer, nullable=False)
     product_id = db.Column(db.Integer, nullable=False)
     quantity = db.Column(db.Integer, default=1)
+    size = db.Column(db.String(20))
     added_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 # class Order(db.Model):
@@ -89,8 +90,7 @@ class Cart(db.Model):
 #     id = db.Column(db.Integer, primary_key=True)
 
 #     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-#     user = db.relationship('User', backref='orders')   # ✅ ADD THIS
-
+#     user = db.relationship('User', backref='orders')   
 #     order_number = db.Column(db.String(20), unique=True, nullable=False)
 #     id = db.Column(db.Integer, primary_key=True)
 #     total_amount = db.Column(db.Float, nullable=False)
@@ -151,7 +151,7 @@ class OrderItem(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    # ✅ ADD ForeignKey
+    
     order_id = db.Column(
         db.Integer,
         db.ForeignKey('orders.id'),
@@ -162,6 +162,7 @@ class OrderItem(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     price_at_time = db.Column(db.Float, nullable=False)
     product_name = db.Column(db.String(100), nullable=False)
+    size = db.Column(db.String(20))
 
 
 class Wishlist(db.Model):
@@ -220,8 +221,13 @@ def generate_order_number():
 # ========== ALL ROUTES DEFINED HERE ==========
 @app.route('/')
 def index():
-    products = Product.query.limit(8).all()
-    return render_template('index.html', products=products)
+    page = request.args.get('page', 1, type=int)
+    per_page = 16
+    
+    pagination = Product.query.paginate(page=page, per_page=per_page, error_out=False)
+    products = pagination.items
+    
+    return render_template('index.html', products=products, pagination=pagination)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -354,12 +360,17 @@ def products():
     if category != 'all':
         query = query.filter(Product.category_id == int(category))  # ✅ FIX
 
-    products_list = query.all()
+    page = request.args.get('page', 1, type=int)
+    per_page = 9  # Show 9 products per page
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    products_list = pagination.items
     categories = Category.query.all()
 
     return render_template(
         'products.html',
         products=products_list,
+        pagination=pagination,
         categories=categories,
         selected_gender=gender,
         selected_category=int(category) if category != 'all' else None
@@ -392,7 +403,8 @@ def add_to_cart():
             cart_item = Cart(
                 user_id=session['user_id'],
                 product_id=product_id,
-                quantity=quantity
+                quantity=quantity,
+                size=request.form.get('size')
             )
             db.session.add(cart_item)
         
@@ -426,6 +438,7 @@ def cart():
                 'id': item.id,
                 'product': product,
                 'quantity': item.quantity,
+                'size': item.size,
                 'item_price': item_price,      # ✅ item_price
                 'item_total': item_total       # ✅ item_total
             })
@@ -515,6 +528,7 @@ def checkout():
             cart_details.append({
                 'product': product,
                 'quantity': item.quantity,
+                'size': item.size,
                 'item_total': item_total
             })
     
@@ -568,7 +582,8 @@ def checkout():
                     product_id=product.id,
                     quantity=item.quantity,
                     price_at_time=product.discounted_price,
-                    product_name=product.name)
+                    product_name=product.name,
+                    size=item.size)
                     db.session.add(order_item)
                     
                     # Update stock
@@ -580,7 +595,7 @@ def checkout():
             db.session.commit()
             
             # Save to order history
-            product_names = [f"{item['product'].name} (Qty: {item['quantity']})" for item in cart_details]
+            product_names = [f"{item['product'].name} (Size: {item['size']}, Qty: {item['quantity']})" for item in cart_details]
             products_str = ", ".join(product_names)
             current_user = session.get('username', 'Guest')
             
@@ -688,7 +703,10 @@ def add_product():
         discount = int(request.form.get('discount', 0))
         category_id = request.form.get('category_id')   # ✅ FIX
         gender = request.form.get('gender', '')
-        size = request.form.get('size', '')
+        # Handle multiple sizes
+        size_list = request.form.getlist('size')
+        size = ",".join(size_list) if size_list else request.form.get('size', '')
+        
         color = request.form.get('color', '').strip()
         stock = int(request.form.get('stock', 0))
         
@@ -798,6 +816,13 @@ def edit_product(product_id):
 
     if request.method == 'POST':
         product.name = request.form.get('name')
+        
+        # Handle multiple sizes update
+        size_list = request.form.getlist('size')
+        if size_list:
+             product.size = ",".join(size_list)
+        else:
+             product.size = request.form.get('size', product.size)
         product.price = float(request.form.get('price', 0))
         product.description = request.form.get('description')
         product.size = request.form.get('size')
@@ -891,10 +916,13 @@ if __name__ == '__main__':
     # Initialize database
     # init_database()
     
-    print("\nStarting application...")
-    print("URL: http://localhost:5001")
-    # print("Admin login: username='admin', password='admin123'")
-    print("=" * 60)
-    
     # Run app
-    app.run(debug=True, port=5001, use_reloader=True)
+    if __name__ == '__main__':
+        import os
+        # Only print when the reloader is actually running the app (not the initial process)
+        if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+            print("\nStarting application...")
+            print("URL: http://localhost:5001")
+            print("=" * 60)
+        
+        app.run(debug=True, port=5001, use_reloader=True)

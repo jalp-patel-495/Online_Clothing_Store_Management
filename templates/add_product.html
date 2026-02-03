@@ -56,16 +56,34 @@
                 <div class="col-md-6">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="size" class="form-label">Size</label>
-                            <select class="form-select" id="size" name="size" required>
-                                <option value="">Select Size</option>
-                                <option value="XS">XS</option>
-                                <option value="S">S</option>
-                                <option value="M">M</option>
-                                <option value="L">L</option>
-                                <option value="XL">XL</option>
-                                <option value="XXL">XXL</option>
-                            </select>
+                            <label class="form-label">Size</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="size" value="XS" id="sizeXS">
+                                    <label class="form-check-label" for="sizeXS">XS</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="size" value="S" id="sizeS">
+                                    <label class="form-check-label" for="sizeS">S</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="size" value="M" id="sizeM">
+                                    <label class="form-check-label" for="sizeM">M</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="size" value="L" id="sizeL">
+                                    <label class="form-check-label" for="sizeL">L</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="size" value="XL" id="sizeXL">
+                                    <label class="form-check-label" for="sizeXL">XL</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="size" value="XXL" id="sizeXXL">
+                                    <label class="form-check-label" for="sizeXXL">XXL</label>
+                                </div>
+                            </div>
+                        </div>
                         </div> 
                         <div class="col-md-6 mb-3">
                             <label for="color" class="form-label">Color</label>

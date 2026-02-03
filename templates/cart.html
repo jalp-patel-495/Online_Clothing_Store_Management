@@ -18,7 +18,10 @@
                     </div>
                     <div class="col-md-6">
                         <h5>{{ item.product.name }}</h5>
-                        <p class="text-muted"> {{ item.product.gender|title }}</p>
+                        <p class="text-muted mb-1"> {{ item.product.gender|title }}</p>
+                        {% if item.size %}
+                        <p class="mb-1">Size: <strong>{{ item.size }}</strong></p>
+                        {% endif %}
                         <!-- <form method="post" action="/add-to-cart" required>
                             <label class="form-label fw-semibold" required>Size</label>
                             <select name="size" class="form-select" required>
