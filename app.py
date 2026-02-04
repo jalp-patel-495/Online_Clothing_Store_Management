@@ -63,18 +63,33 @@ class Product(db.Model):
 
     category = db.relationship('Category', backref='products')
     images = db.relationship('ProductImage', backref='product', cascade='all, delete-orphan')
+    sizes = db.relationship('ProductSize', backref='product', cascade='all, delete-orphan')
 
     @property
     def discounted_price(self):
         if self.discount and self.discount > 0:
             return round(self.price - (self.price * self.discount / 100), 2)
         return self.price
+    
+    def get_stock(self, size_val=None):
+        if size_val:
+            ps = ProductSize.query.filter_by(product_id=self.id, size=size_val).first()
+            if ps:
+                return ps.quantity
+        return self.stock # Fallback to total stock
 
 class ProductImage(db.Model):
     __tablename__ = 'product_images'
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     image_url = db.Column(db.String(255), nullable=False)
+
+class ProductSize(db.Model):
+    __tablename__ = 'product_sizes'
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    size = db.Column(db.String(10), nullable=False)
+    quantity = db.Column(db.Integer, default=0)
 
 class Cart(db.Model):
     __tablename__ = 'cart'
@@ -206,7 +221,7 @@ def admin_required(f):
         if 'user_id' not in session:
             flash('Please login first', 'warning')
             return redirect(url_for('login'))
-        user = User.query.get(session['user_id'])
+        user = db.session.get(User, session['user_id'])
         if not user or not user.is_admin:
             flash('Admin access required', 'danger')
             return redirect(url_for('index'))
@@ -385,26 +400,36 @@ def add_to_cart():
         quantity = int(request.form.get('quantity', 1))
         
         product = Product.query.get_or_404(product_id)
+        size = request.form.get('size')
         
-        # Check stock
-        if quantity > product.stock:
-            flash(f'Only {product.stock} items available', 'warning')
-            quantity = product.stock
+        # Check stock (Per Size)
+        available_stock = product.get_stock(size)
+        
+        if quantity > available_stock:
+            flash(f'Only {available_stock} items available for size {size}', 'warning')
+            quantity = available_stock
+            if quantity == 0:
+                 return redirect(request.referrer or url_for('index'))
         
         # Check if already in cart
         cart_item = Cart.query.filter_by(
             user_id=session['user_id'], 
-            product_id=product_id
-        ).first()
+            product_id=product_id,
+            size=size
+        ).first() 
         
         if cart_item:
-            cart_item.quantity += quantity
+            if cart_item.quantity + quantity > available_stock:
+                 flash(f'Total quantity in cart exceeds available stock ({available_stock})', 'warning')
+                 cart_item.quantity = available_stock
+            else:
+                 cart_item.quantity += quantity
         else:
             cart_item = Cart(
                 user_id=session['user_id'],
                 product_id=product_id,
                 quantity=quantity,
-                size=request.form.get('size')
+                size=size
             )
             db.session.add(cart_item)
         
@@ -427,7 +452,7 @@ def cart():
     total = 0
     
     for item in cart_items:
-        product = Product.query.get(item.product_id)
+        product = db.session.get(Product, item.product_id)
         if product:
             item_price = product.discounted_price
             item_total = item_price * item.quantity
@@ -439,8 +464,8 @@ def cart():
                 'product': product,
                 'quantity': item.quantity,
                 'size': item.size,
-                'item_price': item_price,      # ✅ item_price
-                'item_total': item_total       # ✅ item_total
+                'item_price': item_price,      
+                'item_total': item_total       
             })
     
     return render_template('cart.html', 
@@ -465,10 +490,12 @@ def update_cart():
             db.session.delete(cart_item)
             flash('Item removed from cart', 'info')
         else:
-            product = Product.query.get(cart_item.product_id)
-            if product and quantity > product.stock:
-                 flash(f'Only {product.stock} items available', 'warning')
-                 quantity = product.stock
+            product = db.session.get(Product, cart_item.product_id)
+            if product:
+                available_stock = product.get_stock(cart_item.size)
+                if quantity > available_stock:
+                     flash(f'Only {available_stock} items available for size {cart_item.size}', 'warning')
+                     quantity = available_stock
             
             cart_item.quantity = quantity
         
@@ -507,13 +534,19 @@ def checkout():
 
     # Validate stock before proceeding
     for item in cart_items:
-        product = Product.query.get(item.product_id)
-        if product and item.quantity > product.stock:
-             flash(f'Stock changed for {product.name}. Only {product.stock} available.', 'warning')
-             # Auto-fix quantity
-             item.quantity = product.stock
-             db.session.commit()
-             return redirect(url_for('cart'))
+        product = db.session.get(Product, item.product_id)
+        if product:
+            available_stock = product.get_stock(item.size)
+            if item.quantity > available_stock:
+                 flash(f'Stock changed for {product.name} ({item.size}). Only {available_stock} available.', 'warning')
+                 # Auto-fix quantity
+                 item.quantity = available_stock
+                 # If stock is 0, remove item?
+                 if available_stock == 0:
+                     db.session.delete(item)
+                 
+                 db.session.commit()
+                 return redirect(url_for('cart'))
 
     
     # Calculate total
@@ -521,7 +554,7 @@ def checkout():
     cart_details = []
     
     for item in cart_items:
-        product = Product.query.get(item.product_id)
+        product = db.session.get(Product, item.product_id)
         if product:
             item_total = product.discounted_price * item.quantity
             total += item_total
@@ -575,7 +608,7 @@ def checkout():
             
             # Create order items
             for item in cart_items:
-                product = Product.query.get(item.product_id)
+                product = db.session.get(Product, item.product_id)
                 if product:
                     order_item = OrderItem(
                     order_id=order.id,
@@ -586,7 +619,12 @@ def checkout():
                     size=item.size)
                     db.session.add(order_item)
                     
-                    # Update stock
+                    # Update stock (Per Size)
+                    ps = ProductSize.query.filter_by(product_id=product.id, size=item.size).first()
+                    if ps:
+                        ps.quantity -= item.quantity
+                    
+                    # Also update total stock cache
                     product.stock -= item.quantity
             
             # Clear cart
@@ -657,9 +695,14 @@ def cancel_order(order_id):
         # Restore stock
         order_items = OrderItem.query.filter_by(order_id=order.id).all()
         for item in order_items:
-            product = Product.query.get(item.product_id)
+            product = db.session.get(Product, item.product_id)
             if product:
+                # Restore total stock
                 product.stock += item.quantity
+                # Restore size stock
+                ps = ProductSize.query.filter_by(product_id=product.id, size=item.size).first()
+                if ps:
+                    ps.quantity += item.quantity
         
         db.session.commit()
         flash('Order cancelled successfully', 'success')
@@ -735,7 +778,32 @@ def add_product():
         )
 
         db.session.add(product)
-        db.session.commit()
+        db.session.commit() # Commit to get ID
+        
+        # Save Product Sizes
+        total_stock = 0
+        
+        # Parse size list
+        # If sizes came as a list or comma separated
+        final_sizes = []
+        
+        if size_list:
+             for s in size_list:
+                 final_sizes.append(s)
+                 qty = int(request.form.get(f'stock_{s}', 0))
+                 if qty < 0: qty = 0
+                 
+                 ps = ProductSize(product_id=product.id, size=s, quantity=qty)
+                 db.session.add(ps)
+                 total_stock += qty
+        else:
+             # Basic fallback if no size selected? 
+             # Just set stock to total entered (if any)
+             total_stock = stock
+             
+        # Update product with calculated total stock and size string
+        product.stock = total_stock
+        product.size = ",".join(final_sizes)
         
         # Save all images
         for url in image_urls:
@@ -819,15 +887,32 @@ def edit_product(product_id):
         
         # Handle multiple sizes update
         size_list = request.form.getlist('size')
+        
+        # Clear old sizes to overwrite
+        ProductSize.query.filter_by(product_id=product.id).delete()
+        
+        total_stock = 0
+        final_sizes = []
+        
         if size_list:
-             product.size = ",".join(size_list)
+            for s in size_list:
+                final_sizes.append(s)
+                qty = int(request.form.get(f'stock_{s}', 0))
+                if qty < 0: qty = 0
+                
+                ps = ProductSize(product_id=product.id, size=s, quantity=qty)
+                db.session.add(ps)
+                total_stock += qty
+            
+            product.size = ",".join(final_sizes)
+            product.stock = total_stock
         else:
-             product.size = request.form.get('size', product.size)
+            product.size = ""
+            product.stock = 0
+
         product.price = float(request.form.get('price', 0))
         product.description = request.form.get('description')
-        product.size = request.form.get('size')
         product.color = request.form.get('color')
-        product.stock = int(request.form.get('stock', 0))
         product.discount = int(request.form.get('discount', 0))
         product.gender = request.form.get('gender')
 
@@ -914,6 +999,9 @@ if __name__ == '__main__':
     # print("=" * 60)
     
     # Initialize database
+    # Initialize database
+    with app.app_context():
+        db.create_all()
     # init_database()
     
     # Run app

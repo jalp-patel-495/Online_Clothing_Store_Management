@@ -13,8 +13,20 @@
                 {% for item in cart_items %}
                 <div class="row mb-3 border-bottom pb-3">
                     <div class="col-md-3">
-                        <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="img-fluid rounded"
-                            style="height: 150px; width: auto; object-fit: cover;">
+                        <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="img-fluid rounded cart-product-img"
+                            style="height: 150px; width: auto; object-fit: cover; cursor: pointer;"
+                            onclick="openImageGallery(this)">
+                        
+                        <!-- Hidden storage for all images of this product -->
+                        <div class="product-images-data d-none">
+                            {% if item.product.images %}
+                                {% for img in item.product.images %}
+                                    <span data-url="{{ img.image_url }}"></span>
+                                {% endfor %}
+                            {% else %}
+                                <span data-url="{{ item.product.image_url }}"></span>
+                            {% endif %}
+                        </div>
                     </div>
                     <div class="col-md-6">
                         <h5>{{ item.product.name }}</h5>
@@ -37,7 +49,7 @@
                         </form> -->
 
 
-                        <p class="mt-2">Color: <strong>Black</strong></p>
+                        <p class="mt-2">Color: <strong>{{ item.product.color }}</strong></p>
 
                         <!-- <p>Stock: {{ item.product.stock }} available</p> -->
 
@@ -199,4 +211,64 @@
     </a>
 </div>
 {% endif %}
+
+
+<!-- Image Gallery Modal (Carousel) -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content bg-transparent border-0 shadow-none">
+        <div class="modal-header border-0 p-0">
+            <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-index-5" data-bs-dismiss="modal" aria-label="Close" style="z-index: 1056; filter: invert(1);"></button>
+        </div>
+      <div class="modal-body p-0">
+        
+        <div id="galleryCarousel" class="carousel slide" data-bs-interval="false">
+            <div class="carousel-inner" id="carouselInner">
+                <!-- Slides will be injected here -->
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    function openImageGallery(imgElement) {
+        const container = imgElement.parentElement.querySelector('.product-images-data');
+        const spans = container.querySelectorAll('span');
+        const carouselInner = document.getElementById('carouselInner');
+        
+        // Clear existing slides
+        carouselInner.innerHTML = '';
+        
+        if (spans.length === 0) {
+            // Fallback to the src of the clicked image if no data found
+            const div = document.createElement('div');
+            div.className = 'carousel-item active';
+            div.innerHTML = `<img src="${imgElement.src}" class="d-block w-100 rounded" style="max-height: 80vh; object-fit: contain;">`;
+            carouselInner.appendChild(div);
+        } else {
+            spans.forEach((span, index) => {
+                const url = span.getAttribute('data-url');
+                const div = document.createElement('div');
+                div.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+                div.innerHTML = `<img src="${url}" class="d-block w-100 rounded" style="max-height: 80vh; object-fit: contain;">`;
+                carouselInner.appendChild(div);
+            });
+        }
+        
+        var myModal = new bootstrap.Modal(document.getElementById('imageModal'));
+        myModal.show();
+    }
+</script>
+
 {% endblock %}

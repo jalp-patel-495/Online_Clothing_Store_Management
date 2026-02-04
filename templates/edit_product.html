@@ -15,19 +15,52 @@
                        value="{{ product.name }}" required>
             </div>
 
-            <!-- Size -->
+            <!-- Size & Stock -->
             <div class="col-md-6 mb-3">
-                <label class="form-label">Size</label>
-                <div class="d-flex flex-wrap gap-2">
+                <label class="form-label">Size & Stock</label>
+                <div class="border p-3 rounded bg-light">
                     {% set current_sizes = product.size.split(',') if product.size else [] %}
                     {% for s in ['XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="size" value="{{ s }}" id="size{{ s }}" 
-                               {% if s in current_sizes %}checked{% endif %}>
-                        <label class="form-check-label" for="size{{ s }}">{{ s }}</label>
+                    {% set is_checked = s in current_sizes %}
+                    {% set stock = product.get_stock(s) %}
+                    
+                    <div class="row align-items-center mb-2">
+                        <div class="col-4">
+                            <div class="form-check">
+                                <input class="form-check-input size-check" type="checkbox" name="size" value="{{ s }}" id="size{{ s }}"
+                                       {% if is_checked %}checked{% endif %}>
+                                <label class="form-check-label fw-bold" for="size{{ s }}">{{ s }}</label>
+                            </div>
+                        </div>
+                        <div class="col-8">
+                            <input type="number" class="form-control form-control-sm stock-input transition-all" 
+                                   name="stock_{{ s }}" id="stock_{{ s }}" placeholder="Qty" 
+                                   min="0" value="{{ stock }}" 
+                                   {% if not is_checked %}disabled style="display:none;"{% else %}style="display:block;" required{% endif %}>
+                        </div>
                     </div>
                     {% endfor %}
                 </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        document.querySelectorAll('.size-check').forEach(check => {
+                            check.addEventListener('change', function() {
+                                const stockInput = document.getElementById('stock_' + this.value);
+                                if (this.checked) {
+                                    stockInput.style.display = 'block';
+                                    stockInput.disabled = false;
+                                    stockInput.required = true;
+                                    if(stockInput.value === '' || stockInput.value == 0) stockInput.value = 1;
+                                } else {
+                                    stockInput.style.display = 'none';
+                                    stockInput.disabled = true;
+                                    stockInput.required = false;
+                                }
+                            });
+                        });
+                    });
+                </script>
             </div>
 
             <!-- Color -->
@@ -43,11 +76,7 @@
                 <textarea name="description" class="form-control" rows="4">{{ product.description }}</textarea>
             </div>
 
-            <!-- Stock Quantity -->
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Stock Quantity</label>
-                <input type="number" name="stock" class="form-control" value="{{ product.stock }}">
-            </div>
+
 
             <!-- Price -->
             <div class="col-md-3 mb-3">

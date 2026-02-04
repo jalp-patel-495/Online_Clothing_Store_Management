@@ -56,33 +56,45 @@
                 <div class="col-md-6">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Size</label>
-                            <div class="d-flex flex-wrap gap-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="size" value="XS" id="sizeXS">
-                                    <label class="form-check-label" for="sizeXS">XS</label>
+                            <label class="form-label">Size & Stock</label>
+                            <div class="border p-3 rounded bg-light">
+                                {% for s in ['XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
+                                <div class="row align-items-center mb-2">
+                                    <div class="col-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input size-check" type="checkbox" name="size" value="{{ s }}" id="size{{ s }}">
+                                            <label class="form-check-label fw-bold" for="size{{ s }}">{{ s }}</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-8">
+                                        <input type="number" class="form-control form-control-sm stock-input transition-all" 
+                                               name="stock_{{ s }}" id="stock_{{ s }}" placeholder="Qty" 
+                                               min="0" disabled style="display:none;">
+                                    </div>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="size" value="S" id="sizeS">
-                                    <label class="form-check-label" for="sizeS">S</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="size" value="M" id="sizeM">
-                                    <label class="form-check-label" for="sizeM">M</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="size" value="L" id="sizeL">
-                                    <label class="form-check-label" for="sizeL">L</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="size" value="XL" id="sizeXL">
-                                    <label class="form-check-label" for="sizeXL">XL</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="size" value="XXL" id="sizeXXL">
-                                    <label class="form-check-label" for="sizeXXL">XXL</label>
-                                </div>
+                                {% endfor %}
                             </div>
+                            <small class="text-muted">Select sizes to enter stock for each.</small>
+                            
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    document.querySelectorAll('.size-check').forEach(check => {
+                                        check.addEventListener('change', function() {
+                                            const stockInput = document.getElementById('stock_' + this.value);
+                                            if (this.checked) {
+                                                stockInput.style.display = 'block';
+                                                stockInput.disabled = false;
+                                                stockInput.required = true;
+                                                if(stockInput.value === '') stockInput.value = 1;
+                                            } else {
+                                                stockInput.style.display = 'none';
+                                                stockInput.disabled = true;
+                                                stockInput.required = false;
+                                            }
+                                        });
+                                    });
+                                });
+                            </script>
                         </div>
                         </div> 
                         <div class="col-md-6 mb-3">
@@ -91,10 +103,7 @@
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="stock" class="form-label">Stock Quantity</label>
-                        <input type="number" class="form-control" id="stock" name="stock" min="0" required>
-                    </div>
+
                     
                     <div class="mb-3">
                         <label for="image_url" class="form-label">Image URLs</label>
