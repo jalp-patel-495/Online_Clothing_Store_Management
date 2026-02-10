@@ -199,19 +199,16 @@
                         </div>
                     </div>
 
-                    <div class="card-footer bg-white">
+                <div class="card-footer bg-white">
                         {% if product.stock > 0 %}
                         {% if session.get('user_id') %}
-                        <form action="{{ url_for('add_to_cart') }}" method="POST" class="d-grid">
-                            <input type="hidden" name="product_id" value="{{ product.id }}">
-                            <input type="hidden" name="quantity" value="1">
-                            <button type="submit" class="btn btn-primary btn-sm">
-                                <i class="fas fa-cart-plus"></i> Add to Cart
-                            </button>
-                        </form>
+                        <button type="button" class="btn btn-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#addToCartModal{{ product.id }}">
+                            <i class="fas fa-cart-plus"></i> Add to Cart
+                        </button>
+                        
                         <br>
                         <a href="{{ url_for('add_to_wishlist', product_id=product.id) }}"
-                            class="btn btn-outline-danger btn-sm w-100">
+                            class="btn btn-outline-danger btn-sm w-100 mt-2">
                             <i class="fas fa-heart"></i> Add to Wishlist
                         </a>
                         {% else %}
@@ -227,6 +224,49 @@
             </div>
             {% endfor %}
         </div>
+
+        <!-- Modals Loop -->
+        {% for product in products %}
+        <!-- Add to Cart Modal -->
+        <div class="modal fade" id="addToCartModal{{ product.id }}" tabindex="-1" aria-hidden="true" style="z-index: 1055;">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ product.name }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="{{ url_for('add_to_cart') }}" method="POST">
+                        <div class="modal-body">
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Select Size:</label>
+                                <select class="form-select" name="size" required>
+                                    {% if product.size %}
+                                        {% for s in product.size.split(',') %}
+                                            <option value="{{ s.strip() }}">{{ s.strip() }}</option>
+                                        {% endfor %}
+                                    {% else %}
+                                        <option value="One Size">One Size</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Quantity:</label>
+                                <input type="number" name="quantity" value="1" min="1" max="{{ product.stock if product.stock else 1 }}" class="form-control">
+                                <small class="text-muted">Available Stock: {{ product.stock if product.stock else 0 }}</small>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Add to Cart</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
 
         </div>
 

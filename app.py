@@ -76,7 +76,7 @@ class Product(db.Model):
             ps = ProductSize.query.filter_by(product_id=self.id, size=size_val).first()
             if ps:
                 return ps.quantity
-        return self.stock # Fallback to total stock
+        return self.stock if self.stock is not None else 0 # Fallback to total stock or 0
 
 class ProductImage(db.Model):
     __tablename__ = 'product_images'
@@ -373,10 +373,10 @@ def products():
         query = query.filter(Product.gender == gender)
 
     if category != 'all':
-        query = query.filter(Product.category_id == int(category))  # ✅ FIX
+        query = query.filter(Product.category_id == int(category))  
 
     page = request.args.get('page', 1, type=int)
-    per_page = 9  # Show 9 products per page
+    per_page = 9  
 
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     products_list = pagination.items
@@ -711,6 +711,59 @@ def cancel_order(order_id):
     
     return redirect(url_for('orders'))
 
+@app.route('/return_order/<int:order_id>')
+@login_required
+def return_order(order_id):
+    """Return order"""
+    order = Order.query.get_or_404(order_id)
+    
+    if order.user_id != session['user_id']:
+        flash('Unauthorized action', 'danger')
+        return redirect(url_for('orders'))
+    
+    if order.status == 'Delivered':
+        order.status = 'Return Requested'
+        db.session.commit()
+        flash('Return request submitted successfully', 'success')
+    else:
+        flash('Cannot return this order', 'warning')
+    
+    return redirect(url_for('orders'))
+
+@app.route('/admin/update_order_status', methods=['POST'])
+@admin_required
+def update_order_status():
+    """Update order status via AJAX"""
+    data = request.get_json()
+    order_id = data.get('order_id')
+    new_status = data.get('status')
+    
+    if not order_id or not new_status:
+        return jsonify({'success': False, 'message': 'Invalid data'}), 400
+        
+    order = db.session.get(Order, order_id)
+    if not order:
+        return jsonify({'success': False, 'message': 'Order not found'}), 404
+        
+    # Handle stock restoration if returned or cancelled
+    if new_status in ['Returned', 'Cancelled'] and order.status not in ['Returned', 'Cancelled']:
+        # Method to restore stock
+        order_items = OrderItem.query.filter_by(order_id=order.id).all()
+        for item in order_items:
+            product = db.session.get(Product, item.product_id)
+            if product:
+                # Restore total stock
+                product.stock += item.quantity
+                # Restore size stock
+                ps = ProductSize.query.filter_by(product_id=product.id, size=item.size).first()
+                if ps:
+                    ps.quantity += item.quantity
+    
+    order.status = new_status
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': f'Order {order.order_number} status updated to {new_status}'})
+
 # ========== ADMIN ROUTES ==========
 @app.route('/admin')
 @admin_required
@@ -721,12 +774,36 @@ def admin():
     total_products = Product.query.count()
     
     recent_orders = Order.query.order_by(Order.created_at.desc()).limit(5).all()
+    return_requests = Order.query.filter_by(status='Return Requested').all()
     
+    # Chart Data: Last 7 Days Sales
+    from datetime import timedelta
+    today = datetime.now().date()
+    dates = []
+    sales = []
+    
+    for i in range(6, -1, -1):
+        day = today - timedelta(days=i)
+        dates.append(day.strftime('%b %d'))
+        
+        # Calculate daily sales (excluding cancelled/returned)
+        # Using python sum for simplicity and compatibility
+        daily_orders = Order.query.filter(
+            db.func.date(Order.created_at) == day,
+            Order.status.notin_(['Cancelled', 'Returned', 'Return Rejected'])
+        ).all()
+        
+        daily_total = sum(order.total_amount for order in daily_orders)
+        sales.append(daily_total)
+
     return render_template('admin.html',
                          total_orders=total_orders,
                          total_users=total_users,
                          total_products=total_products,
-                         recent_orders=recent_orders)
+                         recent_orders=recent_orders,
+                         return_requests=return_requests,
+                         chart_dates=dates,
+                         chart_sales=sales)
 
 @app.route('/admin/products')
 @admin_required
@@ -744,7 +821,7 @@ def add_product():
         description = request.form.get('description', '').strip()
         price = float(request.form.get('price', 0))
         discount = int(request.form.get('discount', 0))
-        category_id = request.form.get('category_id')   # ✅ FIX
+        category_id = request.form.get('category_id')   
         gender = request.form.get('gender', '')
         # Handle multiple sizes
         size_list = request.form.getlist('size')
@@ -759,7 +836,7 @@ def add_product():
         
         main_image_url = image_urls[0] if image_urls else 'https://via.placeholder.com/300x400'
 
-        # ✅ FIXED validation
+       
         if not name or price <= 0 or not category_id:
             flash('Please fill all required fields', 'danger')
             return redirect(url_for('add_product'))
@@ -769,7 +846,7 @@ def add_product():
             description=description,
             price=price,
             discount=discount,
-            category_id=category_id,   # ✅ FIX
+            category_id=category_id,   
             gender=gender,
             size=size,
             color=color,

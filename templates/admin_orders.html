@@ -36,6 +36,8 @@
                         <option value="Processing" {% if order.status == 'Processing' %}selected{% endif %}>Processing</option>
                         <option value="Shipped" {% if order.status == 'Shipped' %}selected{% endif %}>Shipped</option>
                         <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                        <option value="Return Requested" {% if order.status == 'Return Requested' %}selected{% endif %}>Return Requested</option>
+                        <option value="Returned" {% if order.status == 'Returned' %}selected{% endif %}>Returned</option>
                         <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
                     </select>
                 </td>
@@ -118,8 +120,32 @@ document.querySelectorAll('.status-select').forEach(select => {
         const orderId = this.dataset.orderId;
         const newStatus = this.value;
         
-        // In a real application, you would make an API call here
-        alert(`Order ${orderId} status changed to ${newStatus}. In a real app, this would update the database.`);
+        fetch("{{ url_for('update_order_status') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                order_id: orderId,
+                status: newStatus
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show toast or alert
+                // For simplicity, using alert, but could be better
+                // location.reload(); // Reload to reflect changes if needed
+            } else {
+                alert('Error updating status: ' + data.message);
+                // Revert selection if needed
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating status');
+        });
     });
 });
 </script>

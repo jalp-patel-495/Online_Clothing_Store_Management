@@ -98,7 +98,7 @@
                         </p>
 
                         <a href="{{ url_for('remove_from_cart', cart_item_id=item.id) }}" class="btn btn-danger btn-sm"
-                            onclick="return confirm('Remove this item from cart?')">
+                            onclick="confirmRemove(event, this.href)">
                             <i class="fas fa-trash"></i> Remove
                         </a>
                     </div>
@@ -198,6 +198,26 @@
         } else {
             input.form.submit();
         }
+    }
+
+    function confirmRemove(event, url) {
+        event.preventDefault(); // Prevent default link behavior
+        
+        Swal.fire({
+            title: 'Remove Item?',
+            text: "Are you sure you want to remove this item from your cart?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, remove it!',
+            cancelButtonText: 'Cancel',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url; // Navigate to the remove URL
+            }
+        });
     }
 </script>
 
