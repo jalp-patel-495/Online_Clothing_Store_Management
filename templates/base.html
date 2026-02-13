@@ -124,34 +124,51 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-dark text-white py-4 mt-5">
+    <footer class="bg-dark text-white py-5 mt-5">
         <div class="container">
             <div class="row">
-                <div class="col-md-4">
-                    <h5>Cloth Store</h5>
-                    <p>Your one-stop shop for all clothing needs.</p>
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5 class="mb-3">Cloth Store</h5>
+                    <p class="text-white-50">Your one-stop shop for all clothing needs. Quality fashion for men, women, and kids at unbeatable prices.</p>
+                    <div class="mt-4">
+                        <a href="#" class="text-white me-3 fs-5"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-white me-3 fs-5"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white me-3 fs-5"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-white fs-5"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <h5>Quick Links</h5>
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5 class="mb-3">Quick Links</h5>
                     <ul class="list-unstyled">
-                        <li><a href="{{ url_for('index') }}" class="text-white text-decoration-none">Home</a></li>
-                        <li><a href="{{ url_for('products', gender='men') }}"
-                                class="text-white text-decoration-none">Men</a></li>
-                        <li><a href="{{ url_for('products', gender='women') }}"
-                                class="text-white text-decoration-none">Women</a></li>
-                        <li><a href="{{ url_for('products', gender='kids') }}"
-                                class="text-white text-decoration-none">Kids</a></li>
+                        <li class="mb-2"><a href="{{ url_for('index') }}" class="text-white-50 text-decoration-none hover-white">Home</a></li>
+                        <li class="mb-2"><a href="{{ url_for('products', gender='men') }}"
+                                class="text-white-50 text-decoration-none hover-white">Men</a></li>
+                        <li class="mb-2"><a href="{{ url_for('products', gender='women') }}"
+                                class="text-white-50 text-decoration-none hover-white">Women</a></li>
+                        <li class="mb-2"><a href="{{ url_for('products', gender='kids') }}"
+                                class="text-white-50 text-decoration-none hover-white">Kids</a></li>
+                        <li class="mb-2"><a href="{{ url_for('products') }}"
+                                class="text-white-50 text-decoration-none hover-white">All Products</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">
-                    <h5>Contact Us</h5>
-                    <p>Email: support@clothstore.com</p>
-                    <p>Phone: +1 234 567 890</p>
+                    <h5 class="mb-3">Contact Us</h5>
+                    <p class="mb-2 text-white-50"><i class="fas fa-envelope me-2"></i> colth_store@gmail.com</p>
+                    <p class="mb-2 text-white-50"><i class="fas fa-phone me-2"></i> +91 1800190012</p>
+                    <p class="text-white-50"><i class="fas fa-map-marker-alt me-2"></i> 123 Fashion Street, India</p>
                 </div>
             </div>
-            <hr class="bg-light">
-            <div class="text-center">
-                <p>&copy; 2026 Cloth Store. All rights reserved.</p>
+            <hr class="bg-secondary my-4">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0 text-white-50">&copy; 2026 Cloth Store. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
+                    <i class="fab fa-cc-visa fa-2x me-3 text-white-50"></i>
+                    <i class="fab fa-cc-mastercard fa-2x me-3 text-white-50"></i>
+                    <i class="fab fa-cc-paypal fa-2x me-3 text-white-50"></i>
+                    <i class="fab fa-cc-amex fa-2x text-white-50"></i>
+                </div>
             </div>
         </div>
     </footer>
