@@ -34,24 +34,8 @@
                         {% if item.size %}
                         <p class="mb-1">Size: <strong>{{ item.size }}</strong></p>
                         {% endif %}
-                        <!-- <form method="post" action="/add-to-cart" required>
-                            <label class="form-label fw-semibold" required>Size</label>
-                            <select name="size" class="form-select" required>
-                                <option value="" disabled selected>Select Size</option>
-                                <option value="XS">XS</option>
-                                <option value="S">S</option>
-                                <option value="M">M</option>
-                                <option value="L">L</option>
-                                <option value="XL">XL</option>
-                                <option value="XXL">XXL</option>
-                            </select>
-                            <button type="submit" class="btn btn-dark mt-3">Add to Cart</button>
-                        </form> -->
-
-
+                       
                         <p class="mt-2">Color: <strong>{{ item.product.color }}</strong></p>
-
-                        <!-- <p>Stock: {{ item.product.stock }} available</p> -->
 
                         <p>
                             {% if item.product.stock > 20 %}
@@ -62,9 +46,6 @@
                             <span style="color: red; font-weight: bold;">Out Of Stock</span>
                             {% endif %}
                         </p>
-
-
-
                         <div class="mb-2">
                             {% if item.product.discount > 0 %}
                             <p class="mb-1">
@@ -81,9 +62,7 @@
                             {% endif %}
                         </div>
                     </div>
-
                     <div class="col-md-3">
-
                         <form action="{{ url_for('update_cart') }}" method="POST" class="mb-2">
                             <input type="hidden" name="cart_item_id" value="{{ item.id }}">
                             <div class="input-group input-group-sm" style="max-width: 100px;">

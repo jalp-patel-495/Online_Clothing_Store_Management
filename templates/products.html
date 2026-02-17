@@ -41,11 +41,29 @@
                                class="list-group-item list-group-item-action {% if not selected_category %}active{% endif %}">
                                 All Categories
                             </a>
+                            {% set men_kids_cats = ['t-shirt', 'shirt', 'jeans', 'hoodie', 'jacket', 'joggers', 'trousers'] %}
+                            {% set women_cats = ['t-shirt', 'shirt', 'jeans', 'hoodie', 'jacket', 'joggers', 'trousers', 'kurti', 'dress'] %}
+
                             {% for category in categories %}
-                            <a href="{{ url_for('products', gender=selected_gender, category=category.id) }}" 
-                               class="list-group-item list-group-item-action {% if selected_category == category.id %}active{% endif %}">
-                                {{ category.name }}
-                            </a>
+                                {% set cat_name = category.name.strip().lower() %}
+                                {% set show_cat = True %}
+                                
+                                {% if selected_gender in ['men', 'kids'] %}
+                                    {% if cat_name not in men_kids_cats %}
+                                        {% set show_cat = False %}
+                                    {% endif %}
+                                {% elif selected_gender == 'women' %}
+                                    {% if cat_name not in women_cats %}
+                                        {% set show_cat = False %}
+                                    {% endif %}
+                                {% endif %}
+
+                                {% if show_cat %}
+                                <a href="{{ url_for('products', gender=selected_gender, category=category.id) }}" 
+                                   class="list-group-item list-group-item-action {% if selected_category == category.id %}active{% endif %}">
+                                    {{ category.name }}
+                                </a>
+                                {% endif %}
                             {% endfor %}
                         </div>
                     </div>
@@ -75,7 +93,6 @@
                     {% if product.discount > 0 %}
                     <span class="badge bg-danger position-absolute" style="top: 10px; left: 10px;">{{ product.discount }}% OFF</span>
                     {% endif %}
-                    <!-- <img src="{{ product.image_url }}" class="card-img-top product-image" alt="{{ product.name }}"> -->
                      <a href="{{ url_for('product_detail', product_id=product.id) }}">
                         <img src="{{ product.image_url }}"
                             class="card-img-top product-image"
@@ -101,13 +118,7 @@
                                 <span class="h5">Rs {{ product.price }}</span>
                                 {% endif %}
                             </div>
-                            <!-- <span class="badge bg-info">{{ product.size }}</span> -->
                         </div>
-                        <!-- <div class="mt-2">
-                            <span class="badge {% if product.stock > 10 %}bg-success{% elif product.stock > 0 %}bg-warning{% else %}bg-danger{% endif %}">
-                                Stock: {{ product.stock }}
-                            </span>
-                        </div> -->
                     </div>
                     <div class="card-footer bg-white">
                         {% if product.stock > 0 %}

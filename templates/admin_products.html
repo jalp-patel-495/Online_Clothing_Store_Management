@@ -60,14 +60,7 @@
                         {{ product.stock }}
                     </span>
                 </td>
-                <!-- <td>
-                    <a href="#" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-edit"></i> Edit
-                    </a>
-                    <a href="#" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this product?')">
-                        <i class="fas fa-trash"></i> Delete
-                    </a>
-                </td> -->
+                
                 <td>
                     <a href="{{ url_for('edit_product', product_id=product.id) }}"class="btn btn-sm btn-outline-primary">
                     Edit

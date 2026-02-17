@@ -76,8 +76,6 @@
                 <textarea name="description" class="form-control" rows="4">{{ product.description }}</textarea>
             </div>
 
-
-
             <!-- Price -->
             <div class="col-md-3 mb-3">
                 <label class="form-label">Price (Rs)</label>
@@ -101,19 +99,6 @@
                     Leave empty to use default placeholder image
                 </small>
             </div>
-
-            <!-- Category -->
-            <!-- <div class="col-md-3 mb-3">
-                <label class="form-label">Category</label>
-                <select name="category" class="form-select">
-                    <option value="">Select Category</option>
-                    {% for c in ['Shirt','T-Shirt','Jeans','Jacket','Hoodie','Kurti','Dress'] %}
-                    <option value="{{ c }}" {% if product.category == c %}selected{% endif %}>
-                        {{ c }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div> -->
             <select name="category_id" class="form-select">
                 <option value="">Select Category</option>
                 {% for c in categories %}
@@ -123,7 +108,6 @@
                 </option>
                 {% endfor %}
             </select>
-
 
             <!-- Gender -->
             <div class="col-md-3 mb-3">

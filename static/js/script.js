@@ -1,23 +1,4 @@
-// Cloth Store JavaScript
 
-// Wait for DOM to be fully loaded
-// document.addEventListener('DOMContentLoaded', function() {
-//     // Update cart count on all pages
-//     updateCartCount();
-
-//     // Initialize tooltips
-//     initTooltips();
-
-//     // Initialize form validation
-//     initFormValidation();
-
-//     // Initialize quantity controls
-//     initQuantityControls();
-
-//     // Initialize search functionality
-//     initSearch();
-// });
-// Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function () {
     // Update cart count on all pages
     updateCartCount();

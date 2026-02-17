@@ -6,16 +6,13 @@ import string
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 
-
 # ========== APP SETUP ==========
 app = Flask(__name__)
-
 app.config['SECRET_KEY'] = 'cloth-store-final-2026'
 
 # Use SQLite - Simple and error-free
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/cloth_store'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 db = SQLAlchemy(app)
 
 # ========== DATABASE MODELS ==========
@@ -36,7 +33,6 @@ class User(db.Model):
 
 class Product(db.Model):
     __tablename__ = 'products'
-
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
@@ -100,29 +96,11 @@ class Cart(db.Model):
     size = db.Column(db.String(20))
     added_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-# class Order(db.Model):
-#     __tablename__ = 'orders'
-#     id = db.Column(db.Integer, primary_key=True)
-
-#     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-#     user = db.relationship('User', backref='orders')   
-#     order_number = db.Column(db.String(20), unique=True, nullable=False)
-#     id = db.Column(db.Integer, primary_key=True)
-#     total_amount = db.Column(db.Float, nullable=False)
-#     status = db.Column(db.String(20), default='Pending')
-#     payment_status = db.Column(db.String(20), default='Pending')
-#     payment_method = db.Column(db.String(50))
-#     shipping_address = db.Column(db.Text)
-#     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
 class Order(db.Model):
     __tablename__ = 'orders'
-
     id = db.Column(db.Integer, primary_key=True)
-
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', backref='orders')
-
     order_number = db.Column(db.String(20), unique=True, nullable=False)
     total_amount = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), default='Pending')
@@ -131,7 +109,6 @@ class Order(db.Model):
     shipping_address = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # ✅ ADD THIS (MOST IMPORTANT)
     order_items = db.relationship(
         'OrderItem',
         backref='order',
@@ -143,30 +120,14 @@ class Order(db.Model):
     def total_items(self):
         return sum(item.quantity for item in self.order_items)
 
-
-
 class Category(db.Model):
     __tablename__ = 'categories'
-
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
 
-
-# class OrderItem(db.Model):
-#     __tablename__ = 'order_items'
-#     id = db.Column(db.Integer, primary_key=True)
-#     order_id = db.Column(db.Integer, nullable=False)
-#     product_id = db.Column(db.Integer, nullable=False)
-#     quantity = db.Column(db.Integer, nullable=False)
-#     price_at_time = db.Column(db.Float, nullable=False)
-#     product_name = db.Column(db.String(100), nullable=False)
-
 class OrderItem(db.Model):
     __tablename__ = 'order_items'
-
     id = db.Column(db.Integer, primary_key=True)
-
-    
     order_id = db.Column(
         db.Integer,
         db.ForeignKey('orders.id'),
@@ -189,8 +150,6 @@ class Wishlist(db.Model):
 
     product = db.relationship('Product', backref='wishlisted')
 
-
-
 # ========== HELPER FUNCTIONS ==========
 def login_required(f):
     @wraps(f)
@@ -205,15 +164,6 @@ def login_required(f):
 def product_detail(product_id):
     product = Product.query.get_or_404(product_id)
     return render_template('product_detail.html', product=product)
-
-
-# @app.route('/add_to_cart/<int:product_id>')
-# def add_to_cart(product_id):
-#     cart = session.get('cart', [])
-#     cart.append(product_id)
-#     session['cart'] = cart
-#     return redirect(url_for('cart'))
-
 
 def admin_required(f):
     @wraps(f)
@@ -238,10 +188,8 @@ def generate_order_number():
 def index():
     page = request.args.get('page', 1, type=int)
     per_page = 16
-    
     pagination = Product.query.paginate(page=page, per_page=per_page, error_out=False)
     products = pagination.items
-    
     return render_template('index.html', products=products, pagination=pagination)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -268,13 +216,10 @@ def register():
         
         new_user = User(username=username, email=email)
         new_user.set_password(password)
-        
         db.session.add(new_user)
         db.session.commit()
-        
         flash('Registration successful! Please login.', 'success')
         return redirect(url_for('login'))
-    
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -283,9 +228,7 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
-        
         user = User.query.filter_by(username=username).first()
-        
         if user and user.check_password(password):
             session['user_id'] = user.id
             session['username'] = user.username
@@ -294,7 +237,6 @@ def login():
             return redirect(url_for('index'))
         else:
             flash('Invalid username or password', 'danger')
-    
     return render_template('login.html')
 
 @app.route('/logout')
@@ -366,18 +308,13 @@ def remove_wishlist(id):
 def products():
     gender = request.args.get('gender', 'all')
     category = request.args.get('category', 'all')
-
     query = Product.query
-
     if gender != 'all':
         query = query.filter(Product.gender == gender)
-
     if category != 'all':
         query = query.filter(Product.category_id == int(category))  
-
     page = request.args.get('page', 1, type=int)
     per_page = 9  
-
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     products_list = pagination.items
     categories = Category.query.all()
@@ -398,26 +335,21 @@ def add_to_cart():
     try:
         product_id = int(request.form.get('product_id', 0))
         quantity = int(request.form.get('quantity', 1))
-        
         product = Product.query.get_or_404(product_id)
         size = request.form.get('size')
-        
         # Check stock (Per Size)
         available_stock = product.get_stock(size)
-        
         if quantity > available_stock:
             flash(f'Only {available_stock} items available for size {size}', 'warning')
             quantity = available_stock
             if quantity == 0:
                  return redirect(request.referrer or url_for('index'))
-        
         # Check if already in cart
         cart_item = Cart.query.filter_by(
             user_id=session['user_id'], 
             product_id=product_id,
             size=size
         ).first() 
-        
         if cart_item:
             if cart_item.quantity + quantity > available_stock:
                  flash(f'Total quantity in cart exceeds available stock ({available_stock})', 'warning')
@@ -432,13 +364,10 @@ def add_to_cart():
                 size=size
             )
             db.session.add(cart_item)
-        
         db.session.commit()
         flash(f'{product.name} added to cart!', 'success')
-        
     except Exception as e:
         flash('Error adding to cart', 'danger')
-    
     return redirect(request.referrer or url_for('index'))
 
 @app.route('/cart')
@@ -446,19 +375,15 @@ def add_to_cart():
 def cart():
     """View cart"""
     cart_items = Cart.query.filter_by(user_id=session['user_id']).all()
-    
     # Get product details and calculate total
     cart_details = []
     total = 0
-    
     for item in cart_items:
         product = db.session.get(Product, item.product_id)
         if product:
             item_price = product.discounted_price
             item_total = item_price * item.quantity
-
             total += item_total
-            
             cart_details.append({
                 'id': item.id,
                 'product': product,
@@ -479,13 +404,10 @@ def update_cart():
     try:
         cart_item_id = int(request.form.get('cart_item_id', 0))
         quantity = int(request.form.get('quantity', 1))
-        
         cart_item = Cart.query.get_or_404(cart_item_id)
-        
         if cart_item.user_id != session['user_id']:
             flash('Unauthorized action', 'danger')
             return redirect(url_for('cart'))
-        
         if quantity <= 0:
             db.session.delete(cart_item)
             flash('Item removed from cart', 'info')
@@ -496,14 +418,10 @@ def update_cart():
                 if quantity > available_stock:
                      flash(f'Only {available_stock} items available for size {cart_item.size}', 'warning')
                      quantity = available_stock
-            
             cart_item.quantity = quantity
-        
         db.session.commit()
-        
     except Exception as e:
         flash('Error updating cart', 'danger')
-    
     return redirect(url_for('cart'))
 
 @app.route('/remove_from_cart/<int:cart_item_id>')
@@ -527,7 +445,6 @@ def remove_from_cart(cart_item_id):
 def checkout():
     """Checkout page"""
     cart_items = Cart.query.filter_by(user_id=session['user_id']).all()
-    
     if not cart_items:
         flash('Your cart is empty', 'warning')
         return redirect(url_for('cart'))
@@ -544,15 +461,12 @@ def checkout():
                  # If stock is 0, remove item?
                  if available_stock == 0:
                      db.session.delete(item)
-                 
                  db.session.commit()
                  return redirect(url_for('cart'))
 
-    
     # Calculate total
     total = 0
     cart_details = []
-    
     for item in cart_items:
         product = db.session.get(Product, item.product_id)
         if product:
@@ -564,32 +478,12 @@ def checkout():
                 'size': item.size,
                 'item_total': item_total
             })
-    
-    # if request.method == 'POST':
-    #     shipping_address = request.form.get('shipping_address', '').strip()
-    #     payment_method = request.form.get('payment_method', 'Cash on Delivery')
-        
-    #     if not shipping_address:
-    #         flash('Shipping address is required', 'danger')
-    #         return render_template('checkout.html', 
-    #                              cart_items=cart_details, 
-    #                              total=round(total, 2))
-
-    # In the checkout route, update the POST section slightly:
 
     if request.method == 'POST':
         shipping_address = request.form.get('shipping_address', '').strip()
         payment_method = request.form.get('payment_method', 'Cash on Delivery')
-        
-        # Add payment validation (optional for demo)
         if payment_method in ['Credit Card', 'Debit Card']:
             card_number = request.form.get('card_number', '').strip()
-            # Demo validation - in real app, you'd use proper validation
-            # if card_number and not card_number.replace(' ', '').startswith('4'):
-            #     flash('For demo: Use card starting with 4111...', 'info')
-        
-    # Continue with existing code...
-        
         try:
             # Create order
             order_number = generate_order_number()
@@ -602,10 +496,8 @@ def checkout():
                 status='Processing',
                 payment_status='Completed'
             )
-            
             db.session.add(order)
             db.session.commit()
-            
             # Create order items
             for item in cart_items:
                 product = db.session.get(Product, item.product_id)
@@ -618,25 +510,19 @@ def checkout():
                     product_name=product.name,
                     size=item.size)
                     db.session.add(order_item)
-                    
                     # Update stock (Per Size)
                     ps = ProductSize.query.filter_by(product_id=product.id, size=item.size).first()
                     if ps:
                         ps.quantity -= item.quantity
-                    
                     # Also update total stock cache
                     product.stock -= item.quantity
-            
             # Clear cart
             Cart.query.filter_by(user_id=session['user_id']).delete()
-            
             db.session.commit()
-            
             # Save to order history
             product_names = [f"{item['product'].name} (Size: {item['size']}, Qty: {item['quantity']})" for item in cart_details]
             products_str = ", ".join(product_names)
             current_user = session.get('username', 'Guest')
-            
             with open('order_history.txt', 'a') as f:
                 f.write(f"\n{'='*40}\n")
                 f.write(f"Order ID:   {order_number}\n")
@@ -645,10 +531,8 @@ def checkout():
                 f.write(f"Total:      rs {total:.2f}\n")
                 f.write(f"Date:       {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
                 f.write(f"{'='*40}\n")
-            
             flash('Order placed successfully!', 'success')
             return redirect(url_for('order_confirmation', order_id=order.id))
-            
         except Exception as e:
             db.session.rollback()
             flash('Error processing order', 'danger')
@@ -667,7 +551,6 @@ def order_confirmation(order_id):
     if order.user_id != session['user_id'] and not session.get('is_admin'):
         flash('Unauthorized', 'danger')
         return redirect(url_for('index'))
-    
     return render_template('order_confirmation.html', order=order)
 
 @app.route('/orders')
@@ -835,7 +718,6 @@ def add_product():
         image_urls = [url.strip() for url in image_urls if url.strip()]
         
         main_image_url = image_urls[0] if image_urls else 'https://via.placeholder.com/300x400'
-
        
         if not name or price <= 0 or not category_id:
             flash('Please fill all required fields', 'danger')
@@ -855,13 +737,10 @@ def add_product():
         )
 
         db.session.add(product)
-        db.session.commit() # Commit to get ID
+        db.session.commit() 
         
         # Save Product Sizes
         total_stock = 0
-        
-        # Parse size list
-        # If sizes came as a list or comma separated
         final_sizes = []
         
         if size_list:
@@ -874,11 +753,7 @@ def add_product():
                  db.session.add(ps)
                  total_stock += qty
         else:
-             # Basic fallback if no size selected? 
-             # Just set stock to total entered (if any)
              total_stock = stock
-             
-        # Update product with calculated total stock and size string
         product.stock = total_stock
         product.size = ",".join(final_sizes)
         
@@ -886,7 +761,6 @@ def add_product():
         for url in image_urls:
             new_img = ProductImage(product_id=product.id, image_url=url)
             db.session.add(new_img)
-        
         db.session.commit()
 
         flash('Product added successfully', 'success')
@@ -931,27 +805,6 @@ def view_order_history():
         )
     except FileNotFoundError:
         return "order_history.txt not found", 404
-
-# @app.route('/admin/edit-product/<int:product_id>', methods=['GET', 'POST'])
-# def edit_product(product_id):
-#     product = Product.query.get_or_404(product_id)
-
-#     if request.method == 'POST':
-#         product.name = request.form['name']
-#         product.price = request.form['price']
-#         product.description = request.form['description']
-#         # product.category = request.form['category']
-#         product.category_id = int(request.form['category_id'])
-#         # category = Category.query.get(request.form['category_id'])
-#         # product.category = category
-
-
-
-#         db.session.commit()
-#         flash("Product updated successfully!", "success")
-#         return redirect(url_for('admin_products'))
-
-#     return render_template('edit_product.html', product=product)
 
 @app.route('/admin/edit-product/<int:product_id>', methods=['GET', 'POST'])
 @admin_required
@@ -1061,22 +914,6 @@ if __name__ == '__main__':
     
     # Suppress Flask server banner
     cli.show_server_banner = lambda *_: None
-
-    # print("=" * 60)
-    # print("CLOTH STORE - ERROR FREE VERSION")
-    # print("=" * 60)
-    # print("Features:")
-    # print("• User Registration & Login")
-    # print("• Product Browsing with Filters")
-    # print("• Shopping Cart")
-    # print("• Checkout & Orders")
-    # print("• Admin Panel")
-    # print("• Order History")
-    # print("• Wishlist Management")
-    # print("=" * 60)
-    
-    # Initialize database
-    # Initialize database
     with app.app_context():
         db.create_all()
     # init_database()

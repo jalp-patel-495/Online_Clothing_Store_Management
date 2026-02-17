@@ -103,9 +103,7 @@
                                 <h5>Total: Rs{{ order.total_amount }}</h5>
                             </div>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
+
                     </div>
                 </div>
             </div>
@@ -134,12 +132,9 @@ document.querySelectorAll('.status-select').forEach(select => {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Show toast or alert
-                // For simplicity, using alert, but could be better
-                // location.reload(); // Reload to reflect changes if needed
+                
             } else {
                 alert('Error updating status: ' + data.message);
-                // Revert selection if needed
             }
         })
         .catch(error => {
