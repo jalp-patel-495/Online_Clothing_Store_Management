@@ -10,8 +10,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'cloth-store-final-2026'
 
-# Use SQLite - Simple and error-free
+# Offline XAMPP Connection:
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/cloth_store'
+
+# Online PyMySQL Connection (Replace 'username', 'password', 'online_host', and 'online_db_name' with your online server details):
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://username:password@online_host/online_db_name'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
